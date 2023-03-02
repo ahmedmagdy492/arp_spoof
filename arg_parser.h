@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#define PARAM_COUNT 2
+#define PARAM_COUNT 3
 
 typedef struct params {
 
@@ -20,4 +20,4 @@ static void init();
 
 static int are_params_valid(char* args[], int argc);
 
-int parse_args(char* args[], int argc, char* interface, char* target_ip);
+int parse_args(char* args[], int argc, char* interface, char* target_ip, char* target_mac);

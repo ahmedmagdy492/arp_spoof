@@ -4,11 +4,14 @@ static params p_interface;
 
 static params p_target_ip;
 
+static params p_target_mac;
+
 static params p_help;
 
 static params* m_params[] =  {
     &p_interface,
-    &p_target_ip
+    &p_target_ip,
+    &p_target_mac
 };
 
 static void init() {
@@ -19,6 +22,10 @@ static void init() {
     p_target_ip.param_full_name = "--target_ip";
     p_target_ip.param_short_name = "";
     p_target_ip.param_desc = "the ip in which the send the packets to";
+
+    p_target_mac.param_full_name = "--target_mac";
+    p_target_mac.param_short_name = "";
+    p_target_mac.param_desc = "the mac address in which the send the query about";
 
     p_help.param_full_name = "--help";
     p_help.param_short_name = "-h";
@@ -102,7 +109,7 @@ static int are_params_valid(char* args[], int argc) {
     return 1;
 }
 
-int parse_args(char* args[], int argc, char* interface, char* target_ip) {
+int parse_args(char* args[], int argc, char* interface, char* target_ip, char* target_mac) {
     init();
     if(are_params_valid(args, argc)) {
         printf("Welcome to ARP Spoofer v1.0\n");
@@ -110,6 +117,7 @@ int parse_args(char* args[], int argc, char* interface, char* target_ip) {
 
         strncpy(interface, p_interface.value, strlen(p_interface.value)+1);
         strncpy(target_ip, p_target_ip.value, strlen(p_target_ip.value)+1);
+        strncpy(target_mac, p_target_mac.value, strlen(p_target_mac.value)+1);
 
         return 1;
     }

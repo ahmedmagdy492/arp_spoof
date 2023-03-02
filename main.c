@@ -20,10 +20,16 @@
 
 int main(int argc, char* argv[]) {
 
-	char interface[24];
-	char target_ip[16];
+	if(argc < 7) {
+		printf("unexpected number of arguments\n");
+		exit(-1);
+	}
 
-	int result = parse_args(argv, argc, interface, target_ip);
+	char interface[24] = {0};
+	char target_ip[16] = {0};
+	char target_mac[18] = {0};
+
+	int result = parse_args(argv, argc, interface, target_ip, target_mac);
 
 	if(!result) {
 		exit(-1);
@@ -82,12 +88,15 @@ int main(int argc, char* argv[]) {
 	eth->h_source[5] = (unsigned char)(ifr_macAddr.ifr_hwaddr.sa_data[5]);
 
 	// filling up dest mac address
-	eth->h_dest[0] = 0xf4;
-	eth->h_dest[1] = 0x7b;
-	eth->h_dest[2] = 0x09;
-	eth->h_dest[3] = 0x12;
-	eth->h_dest[4] = 0x53;
-	eth->h_dest[5] = 0xfe;
+	int dst_mac[6];
+	extract_mac(target_mac, dst_mac);
+
+	eth->h_dest[0] = dst_mac[0];
+	eth->h_dest[1] = dst_mac[1];
+	eth->h_dest[2] = dst_mac[2];
+	eth->h_dest[3] = dst_mac[3];
+	eth->h_dest[4] = dst_mac[4];
+	eth->h_dest[5] = dst_mac[5];
 	eth->h_proto = htons(ETH_P_ARP);
 	total_len += sizeof(struct ethhdr);
 
@@ -119,12 +128,12 @@ int main(int argc, char* argv[]) {
 	arp->src_ip[2] = (unsigned char)ip[2];
 	arp->src_ip[3] = (unsigned char)ip[3];
 
-	arp->dst_mac[0] = 0xd4;
-	arp->dst_mac[1] = 0x6b;
-	arp->dst_mac[2] = 0xa6;
-	arp->dst_mac[3] = 0xdf;
-	arp->dst_mac[4] = 0xe6;
-	arp->dst_mac[5] = 0xab;
+	arp->dst_mac[0] = dst_mac[0];
+	arp->dst_mac[1] = dst_mac[1];
+	arp->dst_mac[2] = dst_mac[2];
+	arp->dst_mac[3] = dst_mac[3];
+	arp->dst_mac[4] = dst_mac[4];
+	arp->dst_mac[5] = dst_mac[5];
 
 	int dst_ip[4];
 	extract_ip(target_ip, dst_ip);
