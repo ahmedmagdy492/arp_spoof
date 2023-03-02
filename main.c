@@ -14,11 +14,20 @@
 
 #include "nt_headers.h"
 #include "util.h"
+#include "arg_parser.h"
 
-#define IN "ens33"
 #define ETH_P_ARP 0x0806
 
 int main(int argc, char* argv[]) {
+
+	char interface[24];
+	char target_ip[16];
+
+	int result = parse_args(argv, argc, interface, target_ip);
+
+	if(!result) {
+		exit(-1);
+	}
 
 	int sock = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
 	if(sock < 0) {
@@ -30,7 +39,7 @@ int main(int argc, char* argv[]) {
 	struct ifreq ifr;
 	memset(&ifr, 0, sizeof(ifr));
 
-	strncpy(ifr.ifr_name, IN, IFNAMSIZ-1);
+	strncpy(ifr.ifr_name, interface, IFNAMSIZ-1);
 	
 	if((ioctl(sock, SIOCGIFINDEX, &ifr)) < 0) {
 		perror("while getting the interface index");
@@ -40,7 +49,7 @@ int main(int argc, char* argv[]) {
 	// getting the mac address of the current interface
 	struct ifreq ifr_macAddr;
 	memset(&ifr_macAddr, 0, sizeof(ifr_macAddr));
-	strncpy(ifr_macAddr.ifr_name, IN, IFNAMSIZ-1);
+	strncpy(ifr_macAddr.ifr_name, interface, IFNAMSIZ-1);
 
 	if((ioctl(sock, SIOCGIFHWADDR, &ifr_macAddr)) < 0) {
 		perror("while getting the mac address of the current interface");
@@ -50,7 +59,7 @@ int main(int argc, char* argv[]) {
 	// getting the ip of the interface
 	struct ifreq ifr_ip;
 	memset(&ifr_ip, 0, sizeof(ifr_ip));
-	strncpy(ifr_ip.ifr_name, IN, IFNAMSIZ-1);
+	strncpy(ifr_ip.ifr_name, interface, IFNAMSIZ-1);
 
 	if((ioctl(sock, SIOCGIFADDR, &ifr_ip)) < 0) {
 		perror("while getting the ip of the interface");
@@ -117,10 +126,13 @@ int main(int argc, char* argv[]) {
 	arp->dst_mac[4] = 0xe6;
 	arp->dst_mac[5] = 0xab;
 
-	arp->dst_ip[0] = 192;
-	arp->dst_ip[1] = 168;
-	arp->dst_ip[2] = 1;
-	arp->dst_ip[3] = 1;
+	int dst_ip[4];
+	extract_ip(target_ip, dst_ip);
+
+	arp->dst_ip[0] = dst_ip[0];
+	arp->dst_ip[1] = dst_ip[1];
+	arp->dst_ip[2] = dst_ip[2];
+	arp->dst_ip[3] = dst_ip[3];
 
 	total_len += sizeof(struct arphdr);
 
