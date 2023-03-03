@@ -146,7 +146,7 @@ void send_arp_packet(char* interface, char* target_ip, char* target_mac, char* s
 		exit(-1);
 	}
 
-	printf("Sent ARP Replay Packet\n");
+	printf("Sent ARP Replay Packet for %s as %s\n", target_ip, spoof_ip);
 
 	close(sock);
 }
